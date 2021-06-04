@@ -7,589 +7,375 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <sys/wait.h>
+#define SEGMENT 1024
 
-static const char *dirpath = "/home/daffainfo/Downloads";
-static const char *logpath = "/home/daffainfo/SinSeiFS.log";
+static const char *dirPath = "/home/daffainfo/Downloads";
 
-void encrypt1(char *path)
+char kode1[10] = "AtoZ_";
+char kode2[10] = "RX_";
+char kode3[10] = "A_is_a_";
+
+void WriteLog(char *c, int type)
 {
-    //Encryptor nomer 1
+	FILE *logFile = fopen("/home/daffainfo/SinSeiFS.log", "a+");
+	time_t currTime;
+	struct tm *time_info;
+	time(&currTime);
+	time_info = localtime(&currTime);
+	int yr = time_info->tm_year, mon = time_info->tm_mon, day = time_info->tm_mday, hour = time_info->tm_hour, min = time_info->tm_min, sec = time_info->tm_sec;
+	if (type == 1)
+	{ //info
+		fprintf(logFile, "INFO::%d%d%d-%d:%d:%d::%s\n", yr, mon, day, hour, min, sec, c);
+	}
+	else if (type == 2)
+	{ //warning
+		fprintf(logFile, "WARNING::%d%d%d-%d:%d:%d::%s\n", yr, mon, day, hour, min, sec, c);
+	}
+	fclose(logFile);
 }
 
-void decrypt1(char *path)
+void encrypt1(char *str)
 {
-    //Decryptor nomer 1
+	//encrypt AtoZ_
 }
 
-void encrypt2(char *path)
+void decrypt1(char *str)
 {
-    //Encryptor nomer 2
+	//decrypt AtoZ_
 }
 
-void decrypt2(char *path)
+void encrypt2(char *str)
 {
-    //Decryptor nomer 2
+	//encrypt RX_
 }
 
-void encrypt3(char *path)
+void decrypt2(char *str)
 {
-    //Encryptor nomer 3
+	//decrypt RX_
 }
 
-void decrypt3(char *path)
+void encrypt3(char *str)
 {
-    //Decryptor nomer 3
+	//encrypt A_is_a_
 }
 
-void writeLog(char *level, char *cmd_desc)
+void decrypt3(char *str)
 {
-    FILE *fp;
-    fp = fopen(logpath, "a+");
+	//decrypt A_is_a_
+}
 
-    time_t rawtime = time(NULL);
-
-    struct tm *info = localtime(&rawtime);
-
-    char time[100];
-    strftime(time, 100, "%d%m%y-%H:%M:%S", info);
-
-    char log[100];
-    sprintf(log, "%s::%s::%s\n", level, time, cmd_desc);
-    fputs(log, fp);
-
-    fclose(fp);
+long file_size(char *name)
+{
+	FILE *fp = fopen(name, "rb"); //must be binary read to get bytes
+	long size = -1;
+	if (fp)
+	{
+		fseek(fp, 0, SEEK_END);
+		size = ftell(fp) + 1;
+		fclose(fp);
+	}
+	return size;
 }
 
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {
-    int res;
-    char temp[1000];
-
-    strcpy(temp, path);
-
-    if (strcmp(path, "/AtoZ_") == 0)
-    {
-        decrypt1(temp);
-    }
-    else if (strcmp(path, "/RX_") == 0)
-    {
-        decrypt2(temp);
-    }
-    else if (strcmp(path, "/A_is_a_") == 0)
-    {
-        decrypt3(temp);
-    }
-
-    char fpath[1000];
-    sprintf(fpath, "%s%s", dirpath, temp);
-
-    res = lstat(fpath, stbuf);
-
-    if (res == -1)
-        return -errno;
-
-    return 0;
+	char *enc1 = strstr(path, kode1);
+	if (enc1 != NULL)
+	{
+		decrypt1(enc1);
+	}
+	char *enc2 = strstr(path, kode2);
+	if (enc2 != NULL)
+	{
+		decrypt2(enc2);
+	}
+	char *enc3 = strstr(path, kode3);
+	if (enc3 != NULL)
+	{
+		decrypt2(enc3);
+	}
+	char newPath[1000];
+	int res;
+	sprintf(newPath, "%s%s", dirPath, path);
+	res = lstat(newPath, stbuf);
+	if (res == -1)
+		return -errno;
+	return 0;
 }
 
 static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
+	char *enc1 = strstr(path, kode1);
+	if (enc1 != NULL)
+	{
+		decrypt1(enc1);
+	}
+	char *enc2 = strstr(path, kode2);
+	if (enc2 != NULL)
+	{
+		decrypt2(enc2);
+	}
+	char *enc3 = strstr(path, kode3);
+	if (enc3 != NULL)
+	{
+		decrypt2(enc3);
+	}
 
-    int res = 0;
-    DIR *dp;
-    struct dirent *de;
+	char newPath[1000];
+	if (strcmp(path, "/") == 0)
+	{
+		path = dirPath;
+		sprintf(newPath, "%s", path);
+	}
+	else
+		sprintf(newPath, "%s%s", dirPath, path);
 
-    (void)offset;
-    (void)fi;
+	int res = 0;
+	struct dirent *dir;
+	DIR *dp;
+	(void)fi;
+	(void)offset;
+	dp = opendir(newPath);
+	if (dp == NULL)
+		return -errno;
 
-    dp = opendir(fpath);
-    if (dp == NULL)
-        return -errno;
+	while ((dir = readdir(dp)) != NULL)
+	{ //rekursif
+		struct stat st;
+		memset(&st, 0, sizeof(st));
+		st.st_ino = dir->d_ino;
+		st.st_mode = dir->d_type << 12;
+		if (enc1 != NULL)
+		{
+			encrypt1(dir->d_name);
+		}
+		if (enc2 != NULL)
+		{
+			encrypt2(dir->d_name, enc2);
+		}
+		if (enc3 != NULL)
+		{
+			encrypt2(dir->d_name, enc3);
+		}
+		res = (filler(buf, dir->d_name, &st, 0));
+		if (res != 0)
+			break;
+	}
 
-    while ((de = readdir(dp)) != NULL)
-    {
-        if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
-            continue;
-
-        struct stat st;
-
-        memset(&st, 0, sizeof(st));
-        st.st_ino = de->d_ino;
-        st.st_mode = de->d_type << 12;
-
-        char tmp[1000];
-        strcpy(tmp, de->d_name);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            encrypt1(tmp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            encrypt2(tmp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            encrypt3(tmp);
-        }
-        res = (filler(buf, tmp, &st, 0));
-
-        if (res != 0)
-            break;
-    }
-
-    closedir(dp);
-    return 0;
-}
-
-static int xmp_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-
-    int res = 0;
-    int fd = 0;
-
-    (void)fi;
-
-    fd = open(fpath, O_RDONLY);
-
-    if (fd == -1)
-        return -errno;
-
-    res = pread(fd, buf, size, offset);
-    if (res == -1)
-        res = -errno;
-
-    close(fd);
-
-    char desc[128];
-    sprintf(desc, "READ::%s", fpath);
-    writeLog("INFO", desc);
-
-    return res;
-}
-
-static int xmp_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
-{
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-
-    int fd;
-    int res;
-
-    (void)fi;
-    fd = open(fpath, O_WRONLY);
-    if (fd == -1)
-        return -errno;
-
-    res = pwrite(fd, buf, size, offset);
-    if (res == -1)
-        res = -errno;
-
-    close(fd);
-
-    char desc[128];
-    sprintf(desc, "WRITE::%s", fpath);
-    writeLog("INFO", desc);
-
-    return res;
-}
-
-static int xmp_open(const char *path, struct fuse_file_info *fi)
-{
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-    int res;
-
-    res = open(fpath, fi->flags);
-    if (res == -1)
-        return -errno;
-
-    close(res);
-
-    char desc[128];
-    sprintf(desc, "OPEN::%s", fpath);
-    writeLog("INFO", desc);
-
-    return 0;
-}
-
-static int xmp_truncate(const char *path, off_t size)
-{
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-    int res;
-
-    res = truncate(fpath, size);
-    if (res == -1)
-        return -errno;
-
-    char desc[128];
-    sprintf(desc, "TRUNC::%s", fpath);
-    writeLog("INFO", desc);
-
-    return 0;
-}
-
-static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
-{
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-
-    int res;
-    /* On Linux this could just be 'mknod(path, mode, rdev)' but this
-	   is more portable */
-    if (S_ISREG(mode))
-    {
-        res = open(fpath, O_CREAT | O_EXCL | O_WRONLY, mode);
-        if (res >= 0)
-            res = close(res);
-    }
-    else if (S_ISFIFO(mode))
-        res = mkfifo(fpath, mode);
-    else
-        res = mknod(fpath, mode, rdev);
-    if (res == -1)
-        return -errno;
-
-    char desc[128];
-    sprintf(desc, "CREATE::%s", fpath);
-    writeLog("INFO", desc);
-
-    return 0;
+	closedir(dp);
+	return 0;
 }
 
 static int xmp_mkdir(const char *path, mode_t mode)
 {
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-    int res;
 
-    res = mkdir(fpath, mode);
-    if (res == -1)
-        return -errno;
+	char newPath[1000];
+	if (strcmp(path, "/") == 0)
+	{
+		path = dirPath;
+		sprintf(newPath, "%s", path);
+	}
+	else
+		sprintf(newPath, "%s%s", dirPath, path);
 
-    char desc[128];
-    sprintf(desc, "MKDIR::%s", fpath);
-    writeLog("INFO", desc);
+	int res = mkdir(newPath, mode);
+	char str[100];
+	sprintf(str, "MKDIR::%s", path);
+	WriteLog(str, 1);
+	if (res == -1)
+		return -errno;
 
-    return 0;
+	return 0;
 }
 
-static int xmp_rmdir(const char *path)
+static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
 {
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-    int res;
 
-    res = rmdir(fpath);
-    if (res == -1)
-        return -errno;
+	char newPath[1000];
+	if (strcmp(path, "/") == 0)
+	{
+		path = dirPath;
+		sprintf(newPath, "%s", path);
+	}
+	else
+		sprintf(newPath, "%s%s", dirPath, path);
+	int res;
 
-    char desc[128];
-    sprintf(desc, "RMDIR::%s", fpath);
-    writeLog("WARNING", desc);
+	if (S_ISREG(mode))
+	{
+		res = open(newPath, O_CREAT | O_EXCL | O_WRONLY, mode);
+		if (res >= 0)
+			res = close(res);
+	}
+	else if (S_ISFIFO(mode))
+		res = mkfifo(newPath, mode);
+	else
+		res = mknod(newPath, mode, rdev);
+	char str[100];
+	sprintf(str, "CREAT::%s", path);
+	WriteLog(str, 1);
+	if (res == -1)
+		return -errno;
 
-    return 0;
-}
-
-static int xmp_rename(const char *from, const char *to)
-{
-    char c_from[1000];
-    char c_to[1000];
-    if (strcmp(from, "/") == 0)
-    {
-        from = dirpath;
-        sprintf(c_from, "%s", from);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, from);
-        if (strcmp(from, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(from, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(from, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(c_from, "%s%s", dirpath, temp);
-    }
-
-    if (strcmp(to, "/") == 0)
-    {
-        to = dirpath;
-        sprintf(c_to, "%s", to);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, to);
-        if (strcmp(to, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(to, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(to, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(c_to, "%s%s", dirpath, temp);
-    }
-
-    int res;
-
-    res = rename(c_from, c_to);
-    if (res == -1)
-        return -errno;
-
-    char desc[128];
-    sprintf(desc, "RENAME::%s::%s", c_from, c_to);
-    writeLog("INFO", desc);
-
-    return 0;
+	return 0;
 }
 
 static int xmp_unlink(const char *path)
 {
-    char fpath[1000];
-    if (strcmp(path, "/") == 0)
-    {
-        path = dirpath;
-        sprintf(fpath, "%s", path);
-    }
-    else
-    {
-        char temp[1000];
-        strcpy(temp, path);
-        if (strcmp(path, "/AtoZ_") == 0)
-        {
-            decrypt1(temp);
-        }
-        else if (strcmp(path, "/RX_") == 0)
-        {
-            decrypt2(temp);
-        }
-        else if (strcmp(path, "/A_is_a_") == 0)
-        {
-            decrypt3(temp);
-        }
-        sprintf(fpath, "%s%s", dirpath, temp);
-    }
-    int res;
+	char *enc1 = strstr(path, kode1);
+	if (enc1 != NULL)
+	{
+		decrypt1(enc1); //buat ngebalikin biar bisa dibaca di document
+	}
+	char *enc2 = strstr(path, kode2);
+	if (enc2 != NULL)
+	{
+		decrypt2(enc2);
+	}
+	char *enc3 = strstr(path, kode3);
+	if (enc3 != NULL)
+	{
+		decrypt2(enc3);
+	}
 
-    res = unlink(fpath);
-    if (res == -1)
-        return -errno;
+	char newPath[1000];
+	if (strcmp(path, "/") == 0)
+	{
+		path = dirPath;
+		sprintf(newPath, "%s", path);
+	}
+	else
+		sprintf(newPath, "%s%s", dirPath, path);
+	char str[100];
+	sprintf(str, "REMOVE::%s", path);
+	WriteLog(str, 2);
+	int res;
+	res = unlink(newPath);
+	if (res == -1)
+		return -errno;
 
-    char desc[128];
-    sprintf(desc, "UNLINK::%s", fpath);
-    writeLog("WARNING", desc);
+	return 0;
+}
 
-    return 0;
+static int xmp_rmdir(const char *path)
+{
+	char *enc1 = strstr(path, kode1);
+	if (enc1 != NULL)
+	{
+		decrypt1(enc1); //buat ngebalikin biar bisa dibaca di document
+	}
+	char *enc2 = strstr(path, kode2);
+	if (enc2 != NULL)
+	{
+		decrypt2(enc2);
+	}
+	char *enc3 = strstr(path, kode3);
+	if (enc3 != NULL)
+	{
+		decrypt2(enc3);
+	}
+
+	char newPath[1000];
+	sprintf(newPath, "%s%s", dirPath, path);
+	char str[100];
+	sprintf(str, "RMDIR::%s", path);
+	WriteLog(str, 2);
+	int res;
+	res = rmdir(newPath);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
+static int xmp_rename(const char *from, const char *to)
+{
+	char fileFrom[1000], fileTo[1000];
+	sprintf(fileFrom, "%s%s", dirPath, from);
+	sprintf(fileTo, "%s%s", dirPath, to);
+
+	char str[100];
+	sprintf(str, "RENAME::%s::%s", from, to);
+	WriteLog(str, 1);
+	int res;
+	res = rename(fileFrom, fileTo);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
+static int xmp_open(const char *path, struct fuse_file_info *fi)
+{ 
+	char newPath[1000];
+	sprintf(newPath, "%s%s", dirPath, path);
+	int res;
+	res = open(newPath, fi->flags);
+	if (res == -1)
+		return -errno;
+	close(res);
+	return 0;
+}
+
+static int xmp_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+{
+
+	char newPath[1000];
+	sprintf(newPath, "%s%s", dirPath, path);
+	int fd;
+	int res;
+
+	(void)fi;
+	fd = open(newPath, O_RDONLY);
+	if (fd == -1)
+		return -errno;
+	res = pread(fd, buf, size, offset);
+	if (res == -1)
+		res = -errno;
+	close(fd);
+	return res;
+}
+
+static int xmp_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+{
+
+	char newPath[1000];
+	sprintf(newPath, "%s%s", dirPath, path);
+
+	int fd;
+	int res;
+	(void)fi;
+	fd = open(newPath, O_WRONLY);
+	if (fd == -1)
+		return -errno;
+	char str[100];
+	sprintf(str, "WRITE::%s", path);
+	WriteLog(str, 1);
+	res = pwrite(fd, buf, size, offset);
+	if (res == -1)
+		res = -errno;
+	close(fd);
+	return res;
 }
 
 static struct fuse_operations xmp_oper = {
-    .getattr = xmp_getattr,
-    .readdir = xmp_readdir,
-    .mknod = xmp_mknod,
-    .mkdir = xmp_mkdir,
-    .unlink = xmp_unlink,
-    .rmdir = xmp_rmdir,
-    .rename = xmp_rename,
-    .truncate = xmp_truncate,
-    .open = xmp_open,
-    .read = xmp_read,
-    .write = xmp_write,
+
+	.getattr = xmp_getattr,
+	.readdir = xmp_readdir,
+	.read = xmp_read,
+	.mkdir = xmp_mkdir,
+	.mknod = xmp_mknod,
+	.unlink = xmp_unlink,
+	.rmdir = xmp_rmdir,
+	.rename = xmp_rename,
+	.open = xmp_open,
+	.write = xmp_write,
+
 };
 
 int main(int argc, char *argv[])
 {
-    umask(0);
-    return fuse_main(argc, argv, &xmp_oper, NULL);
+	umask(0);
+	return fuse_main(argc, argv, &xmp_oper, NULL);
 }
