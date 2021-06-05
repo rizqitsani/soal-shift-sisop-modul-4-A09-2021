@@ -8,9 +8,8 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#define SEGMENT 1024
 
-static const char *dirPath = "/home/daffainfo/Downloads";
+static const char *dirPath = "/home/rizqitsani/Downloads";
 
 char kode1[10] = "AtoZ_";
 char kode2[10] = "RX_";
@@ -20,19 +19,24 @@ char key[] = "SISOP";
 
 void WriteLog(char *c, int type)
 {
-	FILE *logFile = fopen("/home/daffainfo/SinSeiFS.log", "a+");
+	FILE *logFile = fopen("/home/rizqitsani/SinSeiFS.log", "a");
 	time_t currTime;
 	struct tm *time_info;
 	time(&currTime);
 	time_info = localtime(&currTime);
-	int yr = time_info->tm_year, mon = time_info->tm_mon, day = time_info->tm_mday, hour = time_info->tm_hour, min = time_info->tm_min, sec = time_info->tm_sec;
+	int year = time_info->tm_year;
+	int mon = time_info->tm_mon;
+	int day = time_info->tm_mday;
+	int hour = time_info->tm_hour;
+	int min = time_info->tm_min;
+	int sec = time_info->tm_sec;
 	if (type == 1)
 	{ //info
-		fprintf(logFile, "INFO::%d%d%d-%d:%d:%d::%s\n", yr, mon, day, hour, min, sec, c);
+		fprintf(logFile, "INFO::%d%d%d-%d:%d:%d:%s\n", day, mon, year, hour, min, sec, c);
 	}
 	else if (type == 2)
 	{ //warning
-		fprintf(logFile, "WARNING::%d%d%d-%d:%d:%d::%s\n", yr, mon, day, hour, min, sec, c);
+		fprintf(logFile, "WARNING::%d%d%d-%d:%d:%d:%s\n", day, mon, year, hour, min, sec, c);
 	}
 	fclose(logFile);
 }
@@ -211,31 +215,7 @@ void encrypt3(char *str) // ENCRYPT Vigenere
 		}
 	}
 
-	int count = 0;
-	for (int i = 0; i < lastIndex; i++)
-	{
-		if (str[i] >= 65 && str[i] <= 90)
-		{
-			str[i] += key[count] - 65;
-			if (str[i] > 90)
-			{
-				str[i] -= 26;
-			}
-		}
-		if (str[i] >= 97 && str[i] <= 122)
-		{
-			if (str[i] + key[count] - 65 > 122)
-			{
-				str[i] -= 26;
-			}
-			str[i] += key[count] - 65;
-		}
-		count++;
-		if (count == 5)
-		{
-			count = 0;
-		}
-	}
+	//VIGENERE WOE
 
 	printf("ENCRYPT 2 VIGENERE %s\n", str);
 }
@@ -265,31 +245,7 @@ void decrypt3(char *str)
 		}
 	}
 
-	int count = 0;
-	for (int i = 0; i < lastIndex; i++)
-	{
-		if (str[i] >= 65 && str[i] <= 90)
-		{
-			str[i] += key[count] - 65;
-			if (str[i] > 90)
-			{
-				str[i] -= 26;
-			}
-		}
-		if (str[i] >= 97 && str[i] <= 122)
-		{
-			if (str[i] + key[count] - 65 > 122)
-			{
-				str[i] -= 26;
-			}
-			str[i] += key[count] - 65;
-		}
-		count++;
-		if (count == 5)
-		{
-			count = 0;
-		}
-	}
+	//VIGENERE WOE
 
 	printf("DECRYPT 1 %s\n", str);
 
@@ -444,7 +400,7 @@ static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
 	else
 		res = mknod(newPath, mode, rdev);
 	char str[100];
-	sprintf(str, "CREAT::%s", path);
+	sprintf(str, "CREATE::%s", path);
 	WriteLog(str, 1);
 	if (res == -1)
 		return -errno;
