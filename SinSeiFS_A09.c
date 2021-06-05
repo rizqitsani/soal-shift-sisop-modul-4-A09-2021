@@ -10,15 +10,17 @@
 #include <sys/wait.h>
 #define SEGMENT 1024
 
-static const char *dirPath = "/home/rizqitsani/Downloads";
+static const char *dirPath = "/home/daffainfo/Downloads";
 
 char kode1[10] = "AtoZ_";
 char kode2[10] = "RX_";
 char kode3[10] = "A_is_a_";
 
+char key[] = "SISOP";
+
 void WriteLog(char *c, int type)
 {
-	FILE *logFile = fopen("/home/rizqitsani/SinSeiFS.log", "a+");
+	FILE *logFile = fopen("/home/daffainfo/SinSeiFS.log", "a+");
 	time_t currTime;
 	struct tm *time_info;
 	time(&currTime);
@@ -114,14 +116,66 @@ void decrypt1(char *str)
 	mirrorUtil(fileName + 1, lastIndex);
 }
 
-void encrypt2(char *str, char *enc2)
+void encrypt2(char *str) // ENCRYPT ROT
 {
-	//encrypt RX_
+	//encrypt AtoZ
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+
+	encrypt1(str);
+	printf("ENCRYPT 1 %s\n", str);
+
+	int lastIndex = strlen(str);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (str[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+
+	int a, len = strlen(str);
+	for (a = 0; a <= lastIndex; a++)
+	{
+		if ((*(str + a) >= 'a' && *(str + a) < 'n') || (*(str + a) >= 'A' && *(str + a) < 'N'))
+			*(str + a) += 13;
+		else if ((*(str + a) > 'm' && *(str + a) < 'z') || (*(str + a) > 'M' && *(str + a) < 'Z'))
+			*(str + a) -= 13;
+	}
+	printf("ENCRYPT 2 %s\n", str);
+}
+
+void encryptVigenere(char *str) // ENCRYPT Vigenere
+{
+	//encrypt AtoZ
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+
+	encrypt1(str);
+	printf("ENCRYPT 1 %s\n", str);
+
+	int lastIndex = strlen(str);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (str[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+
+\	//MASIH SALAH
+	printf("ENCRYPT 2 %s\n", str);
 }
 
 void decrypt2(char *str)
 {
-	//decrypt RX_
+
 }
 
 void encrypt3(char *str)
@@ -222,11 +276,11 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 		}
 		if (enc2 != NULL)
 		{
-			encrypt2(dir->d_name, enc2);
+			encrypt2(dir->d_name);
 		}
 		if (enc3 != NULL)
 		{
-			encrypt2(dir->d_name, enc3);
+			encrypt2(dir->d_name);
 		}
 		res = (filler(buf, dir->d_name, &st, 0));
 		if (res != 0)
@@ -431,16 +485,16 @@ static int xmp_write(const char *path, const char *buf, size_t size, off_t offse
 
 static struct fuse_operations xmp_oper = {
 
-		.getattr = xmp_getattr,
-		.readdir = xmp_readdir,
-		.read = xmp_read,
-		.mkdir = xmp_mkdir,
-		.mknod = xmp_mknod,
-		.unlink = xmp_unlink,
-		.rmdir = xmp_rmdir,
-		.rename = xmp_rename,
-		.open = xmp_open,
-		.write = xmp_write,
+	.getattr = xmp_getattr,
+	.readdir = xmp_readdir,
+	.read = xmp_read,
+	.mkdir = xmp_mkdir,
+	.mknod = xmp_mknod,
+	.unlink = xmp_unlink,
+	.rmdir = xmp_rmdir,
+	.rename = xmp_rename,
+	.open = xmp_open,
+	.write = xmp_write,
 
 };
 
