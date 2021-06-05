@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #define SEGMENT 1024
 
-static const char *dirPath = "/home/daffainfo/Downloads";
+static const char *dirPath = "/home/rizqitsani/Downloads";
 
 char kode1[10] = "AtoZ_";
 char kode2[10] = "RX_";
@@ -18,7 +18,7 @@ char kode3[10] = "A_is_a_";
 
 void WriteLog(char *c, int type)
 {
-	FILE *logFile = fopen("/home/daffainfo/SinSeiFS.log", "a+");
+	FILE *logFile = fopen("/home/rizqitsani/SinSeiFS.log", "a+");
 	time_t currTime;
 	struct tm *time_info;
 	time(&currTime);
@@ -35,17 +35,86 @@ void WriteLog(char *c, int type)
 	fclose(logFile);
 }
 
+void mirrorUtil(char *str, int safeIndex)
+{
+	for (int j = 0; j < safeIndex; j++)
+	{
+		int alphabetCount = 26;
+		char awal = str[j];
+
+		if (str[j] >= 65 && str[j] <= 90)
+		{
+			str[j] = str[j] - 65 + 1;
+			str[j] = alphabetCount - str[j];
+			str[j] += 65;
+		}
+		else if (str[j] >= 97 && str[j] <= 122)
+		{
+			str[j] = str[j] - 97 + 1;
+			str[j] = alphabetCount - str[j];
+			str[j] += 97;
+		}
+
+		printf("%c JADI %c\n", awal, str[j]);
+	}
+}
+
 void encrypt1(char *str)
 {
-	//encrypt AtoZ_
+	//encrypt AtoZ
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+
+	printf("LAGI ENCRYPT %s\n", str);
+
+	int lastIndex = strlen(str);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (str[i] == '/')
+			continue;
+		if (str[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+	mirrorUtil(str, lastIndex);
+	printf("FINAL %s\n", str);
 }
 
 void decrypt1(char *str)
 {
 	//decrypt AtoZ_
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+
+	if (strstr(str, "/") == NULL)
+		return;
+
+	char *fileName = strstr(str, "/");
+
+	printf("LAGI DECRYPT %s - %s\n", str, fileName);
+
+	int lastIndex = strlen(fileName);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (fileName[i] == '/')
+			break;
+		if (fileName[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+
+	mirrorUtil(fileName + 1, lastIndex);
 }
 
-void encrypt2(char *str)
+void encrypt2(char *str, char *enc2)
 {
 	//encrypt RX_
 }
@@ -149,6 +218,7 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 		if (enc1 != NULL)
 		{
 			encrypt1(dir->d_name);
+			printf("DIRECTORY : %s\n", dir->d_name);
 		}
 		if (enc2 != NULL)
 		{
@@ -307,7 +377,7 @@ static int xmp_rename(const char *from, const char *to)
 }
 
 static int xmp_open(const char *path, struct fuse_file_info *fi)
-{ 
+{
 	char newPath[1000];
 	sprintf(newPath, "%s%s", dirPath, path);
 	int res;
@@ -361,16 +431,16 @@ static int xmp_write(const char *path, const char *buf, size_t size, off_t offse
 
 static struct fuse_operations xmp_oper = {
 
-	.getattr = xmp_getattr,
-	.readdir = xmp_readdir,
-	.read = xmp_read,
-	.mkdir = xmp_mkdir,
-	.mknod = xmp_mknod,
-	.unlink = xmp_unlink,
-	.rmdir = xmp_rmdir,
-	.rename = xmp_rename,
-	.open = xmp_open,
-	.write = xmp_write,
+		.getattr = xmp_getattr,
+		.readdir = xmp_readdir,
+		.read = xmp_read,
+		.mkdir = xmp_mkdir,
+		.mknod = xmp_mknod,
+		.unlink = xmp_unlink,
+		.rmdir = xmp_rmdir,
+		.rename = xmp_rename,
+		.open = xmp_open,
+		.write = xmp_write,
 
 };
 
