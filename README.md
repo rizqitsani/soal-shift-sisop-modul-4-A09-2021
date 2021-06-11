@@ -14,6 +14,8 @@
 
 ### **Deskripsi**
 
+Membuat enkripsi menggunakan Atbash Cipher dengan kriteria:
+
 - Jika sebuah direktori dibuat dengan awalan “AtoZ\_”, maka direktori tersebut akan menjadi direktori ter-encode.
 - Jika sebuah direktori di-rename dengan awalan “AtoZ\_”, maka direktori tersebut akan menjadi direktori ter-encode.
 - Apabila direktori yang terenkripsi di-rename menjadi tidak ter-encode, maka isi direktori tersebut akan terdecode.
@@ -22,7 +24,133 @@
 
 ### **Pembahasan**
 
+Pertama membuat fungsi `encrypt1` yang akan dipanggil saat readdir.
+
+Fungsi ini akan mengambil string tanpa ekstensi yang nantinya akan dienkripsi menggunakan Atbash Cipher.
+Contoh:
+
+```
+halo.txt ⟶ halo
+```
+
+Fungsi `encrypt1`:
+
+```c
+void encrypt1(char *str)
+{
+	//encrypt AtoZ
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+
+	printf("LAGI ENCRYPT %s\n", str);
+
+	int lastIndex = strlen(str);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (str[i] == '/')
+			continue;
+		if (str[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+	mirrorUtil(str, lastIndex);
+	printf("FINAL %s\n", str);
+}
+```
+
+Selanjutnya ada fungsi `decrypt1` yang akan dipanggil saat getattr, readdir, unlink, dan rmdir.
+
+Sama seperti fungsi `encrypt1`, fungsi ini hanya akan mengambil string tanpa ekstensi yang akan didekripsi menggunakan Atbash Cipher. Contoh:
+
+```
+AtoZ_tes/szol ⟶ /szol
+```
+
+Fungsi `decrypt1`:
+
+```c
+void decrypt1(char *str)
+{
+	//decrypt AtoZ_
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+
+	if (strstr(str, "/") == NULL)
+		return;
+
+	char *fileName = strstr(str, "/");
+
+	printf("LAGI DECRYPT %s - %s\n", str, fileName);
+
+	int lastIndex = strlen(fileName);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (fileName[i] == '/')
+			break;
+		if (fileName[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+
+	mirrorUtil(fileName + 1, lastIndex);
+}
+```
+
+String tanpa ekstensi yang didapat dari kedua fungsi diatas akan digunakan pada fungsi `mirrorUtil`. Karena enkripsinya seperti membalik abjad, fungsi ini dapat digunakan sekaligus untuk enkripsi maupun dekripsi.
+
+Fungsi `mirrorUtil`:
+
+```c
+void mirrorUtil(char *str, int safeIndex)
+{
+	for (int j = 0; j < safeIndex; j++)
+	{
+		int alphabetCount = 26;
+		char awal = str[j];
+
+		if (str[j] >= 65 && str[j] <= 90)
+		{
+			str[j] = str[j] - 65 + 1;
+			str[j] = alphabetCount - str[j];
+			str[j] += 65;
+		}
+		else if (str[j] >= 97 && str[j] <= 122)
+		{
+			str[j] = str[j] - 97 + 1;
+			str[j] = alphabetCount - str[j];
+			str[j] += 97;
+		}
+
+		printf("%c JADI %c\n", awal, str[j]);
+	}
+}
+```
+
+Terakhir, setiap folder yang dibuat atau direname dengan awalan `AtoZ_` dicatat dalam log menggunakan fungsi `AtoZLog`
+
+Fungsi `AtoZLog`:
+
+```c
+void AtoZLog(const char *previousPath, const char *newPath)
+{
+	FILE *logFile = fopen("/home/rizqitsani/AtoZ.log", "a");
+	fprintf(logFile, "%s → %s\n", previousPath, newPath);
+
+	fclose(logFile);
+}
+```
+
 ### **Kendala**
+
+Sempat kebingungan menentukan tempat fungsi decrypt harus dipanggil sehingga folder Fuse menjadi kosong.
 
 ### **Screenshot**
 
