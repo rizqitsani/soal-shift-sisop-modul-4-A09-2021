@@ -173,9 +173,89 @@ Sempat kebingungan menentukan tempat fungsi decrypt harus dipanggil sehingga fol
   Ketika diakses melalui filesystem hanya akan muncul Suatu_File.txt
 
 ### **Pembahasan**
+Untuk cara encrypt nomer 2 ini ialah dengan atbash dan ROT13, yang berarti membuat terlebih dahulu fungsi baru bernama `encrypt2` yang berisi fungsi dari `encrypt1` dan di encrypt lagi menggunakan ROT13, fungsi ini terdapat di `readdir`
+Fungsi `encrypt2`:
+```c
+void encrypt2(char *str) // ENCRYPT ROT
+{
+	//encrypt AtoZ
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
 
+	encrypt1(str);
+	printf("ENCRYPT 1 %s\n", str);
+
+	int lastIndex = strlen(str);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (str[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+
+	int a;
+	for (a = 0; a <= lastIndex; a++)
+	{
+		if ((*(str + a) >= 'a' && *(str + a) < 'n') || (*(str + a) >= 'A' && *(str + a) < 'N'))
+			*(str + a) += 13;
+		else if ((*(str + a) > 'm' && *(str + a) <= 'z') || (*(str + a) > 'M' && *(str + a) <= 'Z'))
+			*(str + a) -= 13;
+	}
+	printf("ENCRYPT 2 %s\n", str);
+}
+```
+
+Kemudian untuk fungsi decryptnya sama seperti fungsi `decrypt1` namun di decrypt lagi menggunakan ROT13 dan dipanggil saat getattr, readdir, unlink, dan rmdir.
+Fungsi `decrypt2` :
+```c
+void decrypt2(char *str)
+{
+	//decrypt RX_ kedua
+	if (strcmp(str, ".") == 0)
+		return;
+	if (strcmp(str, "..") == 0)
+		return;
+	if (strstr(str, "/") == NULL)
+		return;
+
+	char *fileName = strstr(str, "/");
+
+	printf("LAGI DECRYPT %s - %s\n", str, fileName);
+
+	int lastIndex = strlen(fileName);
+	for (int i = lastIndex; i >= 0; i--)
+	{
+		if (fileName[i] == '/')
+			break;
+		if (fileName[i] == '.')
+		{
+			lastIndex = i;
+			break;
+		}
+	}
+
+	int a;
+	for (a = 0; a <= lastIndex; a++)
+	{
+		if ((*(fileName + a) >= 'a' && *(fileName + a) < 'n') || (*(fileName + a) >= 'A' && *(fileName + a) < 'N'))
+			*(fileName + a) += 13;
+		else if ((*(fileName + a) > 'm' && *(fileName + a) <= 'z') || (*(fileName + a) > 'M' && *(fileName + a) <= 'Z'))
+			*(fileName + a) -= 13;
+	}
+	printf("DECRYPT 1 %s\n", str);
+
+	decrypt1(str);
+
+	printf("DECRYPT 2 %s\n", str);
+}
+```
 ### **Kendala**
-
+- Tidak mengerti maksute rename pada soal 2b
+- Bingung cara menyelesaikan soal 2e
 ### **Screenshot**
 
 ## Nomor 3
