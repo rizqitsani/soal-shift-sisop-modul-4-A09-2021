@@ -154,6 +154,22 @@ Sempat kebingungan menentukan tempat fungsi decrypt harus dipanggil sehingga fol
 
 ### **Screenshot**
 
+Kondisi awal:
+
+![Awal1](https://user-images.githubusercontent.com/68275535/121711555-ee1b3400-cb04-11eb-87c3-c01aee5f2985.png)
+
+![Awal2](https://user-images.githubusercontent.com/68275535/121712023-700b5d00-cb05-11eb-9ce5-0c213f1d9dc7.png)
+
+Setelah rename:
+
+![Rename1](https://user-images.githubusercontent.com/68275535/121712274-c37dab00-cb05-11eb-8ac6-8a143f7a0dbf.png)
+
+![Rename2](https://user-images.githubusercontent.com/68275535/121712335-d8f2d500-cb05-11eb-9226-0f1c49bd0f76.png)
+
+File log:
+
+![Log](https://user-images.githubusercontent.com/68275535/121712864-6504fc80-cb06-11eb-8e89-280f0487ec7e.png)
+
 ## Nomor 2
 
 [Daftar Isi](#daftar-isi)
@@ -173,8 +189,10 @@ Sempat kebingungan menentukan tempat fungsi decrypt harus dipanggil sehingga fol
   Ketika diakses melalui filesystem hanya akan muncul Suatu_File.txt
 
 ### **Pembahasan**
+
 Untuk cara encrypt nomer 2 ini ialah dengan atbash dan ROT13, yang berarti membuat terlebih dahulu fungsi baru bernama `encrypt2` yang berisi fungsi dari `encrypt1` dan di encrypt lagi menggunakan ROT13, fungsi ini terdapat di `readdir`
 Fungsi `encrypt2`:
+
 ```c
 void encrypt2(char *str) // ENCRYPT ROT
 {
@@ -211,6 +229,7 @@ void encrypt2(char *str) // ENCRYPT ROT
 
 Kemudian untuk fungsi decryptnya sama seperti fungsi `decrypt1` namun di decrypt lagi menggunakan ROT13 dan dipanggil saat getattr, readdir, unlink, dan rmdir.
 Fungsi `decrypt2` :
+
 ```c
 void decrypt2(char *str)
 {
@@ -253,9 +272,12 @@ void decrypt2(char *str)
 	printf("DECRYPT 2 %s\n", str);
 }
 ```
+
 ### **Kendala**
+
 - Tidak mengerti maksute rename pada soal 2b
 - Bingung cara menyelesaikan soal 2e
+
 ### **Screenshot**
 
 ## Nomor 3
