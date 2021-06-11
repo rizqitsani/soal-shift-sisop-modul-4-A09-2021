@@ -275,10 +275,22 @@ void decrypt2(char *str)
 
 ### **Kendala**
 
-- Tidak mengerti maksute rename pada soal 2b
+- Tidak mengerti maksut dari `rename` pada soal 2b
 - Bingung cara menyelesaikan soal 2e
 
 ### **Screenshot**
+
+Kondisi awal:
+
+![Awal1](https://i.ibb.co/HBjnQsz/Screenshot-from-2021-06-11-22-47-46.png)
+
+![Awal2](https://i.ibb.co/ymCBbns/Screenshot-from-2021-06-11-22-47-51.png)
+
+Setelah rename:
+
+![Rename1](https://i.ibb.co/BrkFM0s/Screenshot-from-2021-06-11-22-47-59.png)
+
+![Rename2](https://i.ibb.co/rms9bnQ/Screenshot-from-2021-06-11-22-48-03.png)
 
 ## Nomor 3
 
