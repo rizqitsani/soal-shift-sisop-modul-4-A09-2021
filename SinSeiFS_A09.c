@@ -24,20 +24,31 @@ void WriteLog(char *c, int type)
 	struct tm *time_info;
 	time(&currTime);
 	time_info = localtime(&currTime);
-	int year = time_info->tm_year;
-	int mon = time_info->tm_mon;
+
+	int year = time_info->tm_year + 1900;
+	int month = time_info->tm_mon + 1;
 	int day = time_info->tm_mday;
 	int hour = time_info->tm_hour;
 	int min = time_info->tm_min;
 	int sec = time_info->tm_sec;
+
 	if (type == 1)
 	{ //info
-		fprintf(logFile, "INFO::%d%d%d-%d:%d:%d:%s\n", day, mon, year, hour, min, sec, c);
+		fprintf(logFile, "INFO::%02d%02d%d-%d:%d:%d:%s\n", day, month, year, hour, min, sec, c);
 	}
 	else if (type == 2)
 	{ //warning
-		fprintf(logFile, "WARNING::%d%d%d-%d:%d:%d:%s\n", day, mon, year, hour, min, sec, c);
+		fprintf(logFile, "WARNING::%02d%02d%d-%d:%d:%d:%s\n", day, month, year, hour, min, sec, c);
 	}
+
+	fclose(logFile);
+}
+
+void AtoZLog(const char *previousPath, const char *newPath)
+{
+	FILE *logFile = fopen("/home/rizqitsani/AtoZ.log", "a");
+	fprintf(logFile, "%s → %s\n", previousPath, newPath);
+
 	fclose(logFile);
 }
 
@@ -356,7 +367,6 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 
 static int xmp_mkdir(const char *path, mode_t mode)
 {
-
 	char newPath[1000];
 	if (strcmp(path, "/") == 0)
 	{
@@ -370,6 +380,19 @@ static int xmp_mkdir(const char *path, mode_t mode)
 	char str[100];
 	sprintf(str, "MKDIR::%s", path);
 	WriteLog(str, 1);
+
+	char *enc1 = strstr(path, kode1);
+	if (enc1 != NULL)
+	{
+		AtoZLog("NULL", newPath);
+	}
+
+	char *enc2 = strstr(path, kode2);
+	if (enc2 != NULL)
+	{
+		decrypt2(enc2);
+	}
+
 	if (res == -1)
 		return -errno;
 
@@ -485,6 +508,13 @@ static int xmp_rename(const char *from, const char *to)
 	char str[100];
 	sprintf(str, "RENAME::%s::%s", from, to);
 	WriteLog(str, 1);
+
+	char *enc1 = strstr(to, kode1);
+	if (enc1 != NULL)
+	{
+		AtoZLog(from, to);
+	}
+
 	int res;
 	res = rename(fileFrom, fileTo);
 	if (res == -1)
@@ -548,16 +578,16 @@ static int xmp_write(const char *path, const char *buf, size_t size, off_t offse
 
 static struct fuse_operations xmp_oper = {
 
-	.getattr = xmp_getattr,
-	.readdir = xmp_readdir,
-	.read = xmp_read,
-	.mkdir = xmp_mkdir,
-	.mknod = xmp_mknod,
-	.unlink = xmp_unlink,
-	.rmdir = xmp_rmdir,
-	.rename = xmp_rename,
-	.open = xmp_open,
-	.write = xmp_write,
+		.getattr = xmp_getattr,
+		.readdir = xmp_readdir,
+		.read = xmp_read,
+		.mkdir = xmp_mkdir,
+		.mknod = xmp_mknod,
+		.unlink = xmp_unlink,
+		.rmdir = xmp_rmdir,
+		.rename = xmp_rename,
+		.open = xmp_open,
+		.write = xmp_write,
 
 };
 
