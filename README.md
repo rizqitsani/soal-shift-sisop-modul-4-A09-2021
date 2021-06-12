@@ -338,7 +338,7 @@ Membuat log system dengan kriteria:
 ### **Pembahasan**
 
 
-Fungsi WriteLog untuk menampilkan log system berupa warning dan info dengan menggunakan time_t, pertama dengan mendeklarasikan file dengan nama logFile yang akan di fopen dengan parameter "a" untuk menambahkan (append), kemudian terdapat if untuk warning sebagai log fungsi syscall rmdir dan unlink lalu menampilkan level : warning log dan info sebagai log fungsi syscall sisanya lalu menampilkan level : info log.
+Fungsi WriteLog untuk menampilkan log system berupa warning dan info dengan menggunakan time_t, pertama dengan mendeklarasikan file dengan nama logFile yang akan di fopen dengan parameter "a" untuk (append), kemudian terdapat if untuk warning sebagai log fungsi syscall rmdir dan unlink lalu menampilkan level : warning log dan info sebagai log fungsi syscall sisanya lalu menampilkan level : info log.
 ```c
 void WriteLog(char *c, int type)
 {
