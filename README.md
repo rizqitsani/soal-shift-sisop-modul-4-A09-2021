@@ -370,5 +370,6 @@ void WriteLog(char *c, int type)
 
 
 ### **Kendala**
+- sempat terjadi kendala file log tidak ditemukan 
 
 ### **Screenshot**
