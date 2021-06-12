@@ -336,6 +336,35 @@ Membuat log system dengan kriteria:
   ```
 
 ### **Pembahasan**
+```c
+void WriteLog(char *c, int type)
+{
+	FILE *logFile = fopen("/home/rizqitsani/SinSeiFS.log", "a");
+	time_t currTime;
+	struct tm *time_info;
+	time(&currTime);
+	time_info = localtime(&currTime);
+
+	int year = time_info->tm_year + 1900;
+	int month = time_info->tm_mon + 1;
+	int day = time_info->tm_mday;
+	int hour = time_info->tm_hour;
+	int min = time_info->tm_min;
+	int sec = time_info->tm_sec;
+
+	if (type == 1)
+	{ //info
+		fprintf(logFile, "INFO::%02d%02d%d-%d:%d:%d:%s\n", day, month, year, hour, min, sec, c);
+	}
+	else if (type == 2)
+	{ //warning
+		fprintf(logFile, "WARNING::%02d%02d%d-%d:%d:%d:%s\n", day, month, year, hour, min, sec, c);
+	}
+
+	fclose(logFile);
+}
+```
+
 
 ### **Kendala**
 
