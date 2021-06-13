@@ -373,3 +373,6 @@ void WriteLog(char *c, int type)
 - sempat terjadi kendala file log tidak ditemukan 
 
 ### **Screenshot**
+
+file:///home/rizqitsani/Pictures/Screenshot%20from%202021-06-13%2021-58-19.png![image](https://user-images.githubusercontent.com/68275535/121812584-901c5700-cc92-11eb-8c12-bd8b0abe59e2.png)
+
